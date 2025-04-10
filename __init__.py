@@ -39,8 +39,9 @@ def encrypt_personnalise(key, valeur):
     except Exception as e:
         return f"Erreur lors du chiffrement : {str(e)}"
 
+
 # ✅ Déchiffrement avec une clé fournie
-@app.route('/decrypt/<key>/<token>')
+@app.route('/decrypt/<key>/<path:token>')
 def decrypt_personnalise(key, token):
     try:
         fernet = Fernet(key.encode())
