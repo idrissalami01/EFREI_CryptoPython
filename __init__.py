@@ -1,13 +1,24 @@
 from cryptography.fernet import Fernet
-from flask import Flask, render_template_string, render_template, jsonify
-from flask import render_template
-from flask import json
-from urllib.request import urlopen
-import sqlite3
-                                                                                                                                       
-app = Flask(__name__)                                                                                                                  
-                
+from flask import Flask, render_template
 
+app = Flask(__name__)
+
+# 🔑 Clé globale pour les routes sans clé utilisateur
+global_key = Fernet.generate_key()
+f = Fernet(global_key)
+
+@app.route('/')
+def hello_world():
+    return render_template('hello.html')
+
+# ✅ Chiffrement avec clé globale (session actuelle)
+@app.route('/encrypt/<string:valeur>')
+def encryptage(valeur):
+    valeur_bytes = valeur.encode()
+    token = f.encrypt(valeur_bytes)
+    return f"Valeur encryptée : {token.decode()}"
+
+# ✅ Déchiffrement avec clé globale
 @app.route('/decrypt/<string:token>')
 def decryptage(token):
     try:
@@ -16,6 +27,8 @@ def decryptage(token):
         return f"Valeur décryptée : {decrypted.decode()}"
     except Exception as e:
         return f"Erreur lors du déchiffrement : {str(e)}"
+
+# ✅ Chiffrement avec une clé fournie par l'utilisateur
 @app.route('/encrypt/<key>/<valeur>')
 def encrypt_personnalise(key, valeur):
     try:
@@ -26,6 +39,7 @@ def encrypt_personnalise(key, valeur):
     except Exception as e:
         return f"Erreur lors du chiffrement : {str(e)}"
 
+# ✅ Déchiffrement avec une clé fournie
 @app.route('/decrypt/<key>/<token>')
 def decrypt_personnalise(key, token):
     try:
@@ -36,23 +50,10 @@ def decrypt_personnalise(key, token):
     except Exception as e:
         return f"Erreur lors du déchiffrement : {str(e)}"
 
+# ✅ Générer une nouvelle clé à utiliser
+@app.route('/generate-key')
+def generate_key():
+    return Fernet.generate_key().decode()
 
-from cryptography.fernet import Fernet
-print(Fernet.generate_key().decode())
-
-                                                                                                                       
-@app.route('/')
-def hello_world():
-    return render_template('hello.html') #comm
-
-key = Fernet.generate_key()
-f = Fernet(key)
-
-@app.route('/encrypt/<string:valeur>')
-def encryptage(valeur):
-    valeur_bytes = valeur.encode()  # Conversion str -> bytes
-    token = f.encrypt(valeur_bytes)  # Encrypt la valeur
-    return f"Valeur encryptée : {token.decode()}"  # Retourne le token en str
-                                                                                                                                                     
 if __name__ == "__main__":
-  app.run(debug=True)
+    app.run(debug=True)
