@@ -43,8 +43,7 @@ def decrypt_personnalise(key, token):
         token_bytes = token.encode()
         decrypted = fernet.decrypt(token_bytes)
         return f"Valeur décryptée : {decrypted.decode()}"
-    except Exception as e:
-        return f"Erreur lors du déchiffrement : {str(e)}"
+
 
 # ✅ Générer une nouvelle clé à utiliser
 @app.route('/generate-key')
